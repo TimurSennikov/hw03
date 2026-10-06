@@ -1,49 +1,48 @@
 import { Repository } from "../domain/post/repository";
 
-export interface Post {
-    id: number,
+type Database = typeof import("../prisma/db").db;
+
+export interface NewPost {
+    title: string
     category: string | undefined,
-    title: string,
     content: string,
     author: string | undefined
 };
 
-export type NewPost = Omit<Post, "id">;
+export function createRepository(db: Database): Repository {
+    async function getAll(category: string | undefined = undefined, take: number | undefined = undefined): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            let q = await db.orm.public.Post.all();
 
-let posts: Post[] = [];
+            if(category) {
+                q = q.filter(a => a.category == category)
+            }
 
-export function createRepository(): Repository {
-    function getAll(category: string | undefined = undefined, take: number | undefined = undefined): Post[] {
-        let q = posts;
+            if(take) {
+                q = q.slice(0, take);
+            }
 
-        if(category) {
-            q = q.filter(a => a.category == category)
-        }
-
-        if(take) {
-            q = q.slice(0, take);
-        }
-
-        return q;
+            resolve(q);
+        });
     }
 
-    function getById(id: number): Post | undefined {
-        let r = posts.find(a => a.id == id);
+    async function getById(id: number): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            let r = await db.orm.public.Post.where({ id: id }).all();
 
-        return r;
+            return r;
+        });
     }
 
-    function addPost(post: NewPost) {
-        let n_post: Post = {
-            id: posts.length,
-            title: post.title,
-            category: post.category,
-            content: post.content,
-            author: post.author
-        };
+    async function addPost(post: NewPost) {
+        return new Promise<string>(async (resolve, reject) => {
+            await db.orm.public.Post.create({
+                author: post.author,
+                category: post.category,
+                content: post.content,
+                title: post.title
+            });
 
-        return new Promise<string>((resolve, reject) => {
-            posts.push(n_post);
             resolve("ok");
         });
     }

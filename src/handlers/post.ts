@@ -30,7 +30,7 @@ export function createHandlers(service: Service): Handlers {
             return res.status(400).json({ok: false});
         }
 
-        return service.getPostById(idn) ? service.getPostById(idn) : res.status(404).json({ok: false});
+        return await service.getPostById(idn) ? service.getPostById(idn) : res.status(404).json({ok: false});
     }
 
     async function createPostHandler(req: Request, res: Response) {

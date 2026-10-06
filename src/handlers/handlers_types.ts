@@ -1,5 +1,3 @@
-import { Post } from "../repositories/post";
-
 import { Request, Response } from 'express';
 
 export interface Handlers {
